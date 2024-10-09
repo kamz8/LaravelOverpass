@@ -232,7 +232,3 @@ public function testSimpleQuery()
 ## License
 
 Laravel Overpass is open-source software licensed under the [MIT license](LICENSE).
-
----
-
-Jeśli masz jakiekolwiek pytania lub potrzebujesz pomocy z pakietem **Laravel Overpass**, nie wahaj się skontaktować!

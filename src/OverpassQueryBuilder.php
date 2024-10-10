@@ -4,6 +4,7 @@ namespace Kamz8\LaravelOverpass;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Http\Client\PendingRequest;
 use Kamz8\LaravelOverpass\Helpers\BoundingBoxHelper;
 
 /**
@@ -15,8 +16,8 @@ use Kamz8\LaravelOverpass\Helpers\BoundingBoxHelper;
  */
 class OverpassQueryBuilder
 {
-    /** @var Client The HTTP client used for API requests */
-    protected Client $client;
+    /** @var PendingRequest The HTTP client used for API requests */
+    protected PendingRequest $client;
 
     /** @var array The configuration array for the Overpass client */
     protected array $config;
@@ -54,10 +55,10 @@ class OverpassQueryBuilder
     /**
      * OverpassQueryBuilder constructor.
      *
-     * @param Client $client The HTTP client
+     * @param PendingRequest $client The HTTP client
      * @param array $config The configuration array
      */
-    public function __construct(Client $client, array $config)
+    public function __construct(PendingRequest $client, array $config)
     {
         $this->client = $client;
         $this->config = $config;
@@ -282,18 +283,18 @@ class OverpassQueryBuilder
         $fullQuery = $this->rawQuery ?? $this->build();
 
         try {
-            $response = $this->client->request('POST', '', [
-                'form_params' => ['data' => $fullQuery],
+            $response = $this->client->asForm()->post('', [
+                'data' => $fullQuery,
             ]);
 
-            $body = $response->getBody()->getContents();
+            $body = $response->body();
 
             if ($this->output === 'json') {
                 return json_decode($body, true, 512, JSON_THROW_ON_ERROR);
             } else {
                 return $body;
             }
-        } catch (GuzzleException $e) {
+        } catch (\Illuminate\Http\Client\RequestException $e) {
             throw new \Exception("Error communicating with Overpass API: " . $e->getMessage(), $e->getCode(), $e);
         } catch (\JsonException $e) {
             throw new \Exception("Error parsing JSON response: " . $e->getMessage(), $e->getCode(), $e);
